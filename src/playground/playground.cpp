@@ -9,7 +9,7 @@
 GLFWwindow* window;
 
 // Include GLM
-#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
 #include <common/shader.hpp>
@@ -19,13 +19,14 @@ int main( void )
   //Initialize window
   bool windowInitialized = initializeWindow();
   if (!windowInitialized) return -1;
-
+  programID = LoadShaders("VertexShader.glsl", "FragmentShader.glsl");
   //Initialize vertex buffer
   bool vertexbufferInitialized = initializeVertexbuffer();
-  if (!vertexbufferInitialized) return -1;
+  if (!vertexbufferInitialized) return -1; 
 
   // Create and compile our GLSL program from the shaders
-  programID = LoadShaders("VertexShader.glsl", "FragmentShader.glsl");
+  
+   bool initialized = initalizeModelViewProjection();
 
 	//start animation loop until escape key is pressed
 	do{
@@ -52,7 +53,7 @@ void updateAnimationLoop()
 
   // Use our shader
   glUseProgram(programID);
-
+  glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
   // 1rst attribute buffer : vertices
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -92,7 +93,7 @@ bool initializeWindow()
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   // Open a window and create its OpenGL context
-  window = glfwCreateWindow(1024, 768, "Tutorial 02 - Red triangle", NULL, NULL);
+  window = glfwCreateWindow(1024, 768, "Mandelbrot Set", NULL, NULL);
   if (window == NULL) {
     fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
     getchar();
@@ -125,12 +126,12 @@ bool initializeVertexbuffer()
 
   vertexbuffer_size = 2*3;
   static const GLfloat g_vertex_buffer_data[] = {
-    -1.0f, -1.0f, 0.0f,
-    1.0f, -1.0f, 0.0f,
-    1.0f,  1.0f, 0.0f,
-    -1.0f, -1.0f, 0.0f,
-    1.0f, 1.0f, 0.0f,
-    -1.0f,  1.0f, 0.0f
+    -10.0f, -10.0f, 0.0f,
+    10.0f, -10.0f, 0.0f,
+    10.0f,  10.0f, 0.0f,
+    -10.0f, -10.0f, 0.0f,
+    10.0f, 10.0f, 0.0f,
+    -10.0f,  10.0f, 0.0f
   };
 
   glGenBuffers(1, &vertexbuffer);
@@ -154,3 +155,22 @@ bool closeWindow()
   return true;
 }
 
+bool initalizeModelViewProjection(){
+  MatrixID = glGetUniformLocation(programID, "MVP");
+  glm::mat4 Projection = glm::perspective(glm::radians(10.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+	// Camera matrix
+	glm::mat4 View       = glm::lookAt(
+								glm::vec3(0,0,3), // Camera is at (4,3,-3), in World Space
+								glm::vec3(0,0,0), // and looks at the origin
+								glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+						   );
+
+  glm::mat4 scaleMatrix =	glm::scale(glm::vec3(0.8f, 0.8f, 0.8f)); 
+	glm::mat4 rotationMatrix = glm::rotate(glm::radians(0.0f),glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 translationMatrix = glm::translate(glm::vec3(0.5f, 0.0f, 0.0f));
+
+  glm::mat4 Model = translationMatrix * rotationMatrix * scaleMatrix;
+
+  MVP =  Projection* View * Model;
+  return true;
+} 
