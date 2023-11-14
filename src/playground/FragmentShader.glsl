@@ -7,7 +7,7 @@ uniform float mandelbrot_iteration;
 // Ouput data
 out vec4 color;
 
-float MAX_ITER = mandelbrot_iteration;
+int MAX_ITER = int(mandelbrot_iteration);
 vec2 complex_mult(vec2 a, vec2 b){
 	return vec2((a.x * b.x) - (a.y * b.y), (a.x * b.y + a.y * b.x));
 }
@@ -32,12 +32,11 @@ void main(){
 
 	// Output color = color specified in the vertex shader, 
 	// interpolated between all 3 surrounding vertices
-	float m = 1 - mandelbrot_set(position_for_color.xy) / MAX_ITER;	// 1 - m for color invertion
-	float g;
-	if(m < MAX_ITER){
-		g = 1;
+	float m = mandelbrot_set(position_for_color.xy);	// 1 - m for color invertion
+	if(m == MAX_ITER){
+		color = vec4(0, 0, 0, 1);
 	}else{
-		g = 0;
+		m = m/ MAX_ITER;
+		color = vec4(0.7, m * 0.9, 0, 1);
 	}
-	color = vec4(m, m, m, 1);
 }

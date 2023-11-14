@@ -26,11 +26,12 @@ int main( void )
   if (!vertexbufferInitialized) return -1; 
 
   // Create and compile our GLSL program from the shaders
-  initalizeModelViewProjection();
+  initalizeAttributes();
 	//start animation loop until escape key is pressed
 	do{
 
     checkpressedkey();
+    updateModelViewProjection();
     updateAnimationLoop();
 
 	} // Check if the ESC key was pressed or the window was closed
@@ -121,15 +122,15 @@ bool initializeWindow()
   return true;
 }
 
-void initalizeModelViewProjection(){
+void initalizeAttributes(){
   MatrixID = glGetUniformLocation(programID, "MVP");
   mandelbrotID = glGetUniformLocation(programID, "mandelbrot_iteration");
 
-  FoV = 20.0f;
+  FoV = 80.0f;
   scaler = 1.0f;
   position_x = 0.0f;
   position_y = 0.0f;
-  mandelbrot_iteration = 128.0f;
+  mandelbrot_iteration = 20.0f;
 
 }
 
@@ -171,55 +172,60 @@ bool closeWindow()
 
 void checkpressedkey(){
   glfwGetCursorPos(window, &mouse_pos_x, &mouse_pos_y);
-  // if(position_x < 1.0f || position_x > -1.0f){
-  //   std::cout << (mouse_pos_x - 512.0f) / 5120.0f;
-  // }
-  // if(position_y < 1.0f || position_y > -1.0f){
-  //   std::cout << (mouse_pos_y - 384.0f) / 3840.0f;
-  // }
-  
    
-  //std::cout << "x: " << mouse_pos_x << ", y: " << mouse_pos_y << "\n";
-  
-    if (glfwGetKey( window, GLFW_KEY_I ) == GLFW_PRESS){
-		  if(FoV > 0.0000001f){
-      FoV -= 0.01;
+  if (glfwGetKey( window, GLFW_KEY_I ) == GLFW_PRESS){
+    if(FoV > 0.05f){
+      FoV -= 0.005 * FoV / 10.0f;
+      if(mandelbrot_iteration < 500){
+        mandelbrot_iteration += 0.01;
+      }
+    }else{
+      FoV = 0.05f;
     }
-    std::cout << FoV << "\n";
   }
 	if (glfwGetKey( window, GLFW_KEY_O ) == GLFW_PRESS){
-    if(FoV <= 70.0f){
-		  FoV += 0.01;
+    if(FoV < 80.0f){
+		  FoV += 0.005 * FoV / 10.0f;
+      if(mandelbrot_iteration > 20){
+        mandelbrot_iteration -= 0.01;
+      }
     }
-    //std::cout << FoV << "\n";
 	}
   if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS){
-    position_x -= 0.0001;
+    if(position_x > -8.0f){
+      position_x -= 0.0001 * FoV / 7.0f;
+    }
 	}
   if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS){
-    position_x += 0.0001;
+    if(position_x < 8.0f){
+      position_x += 0.0001 * FoV / 7.0f;
+    }
 	}
-
   if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
-    position_y -= 0.0001;
+    if(position_y > -6.0f){
+      position_y -= 0.0001 * FoV / 7.0f;
+    }
 	}
   if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
-    position_y += 0.0001;
+    if(position_y < 6.0f){
+      position_y += 0.0001 * FoV / 7.0f;
+    }
 	}
 
   if (glfwGetKey( window, GLFW_KEY_M ) == GLFW_PRESS){
     if(mandelbrot_iteration < 500){
-      mandelbrot_iteration += 0.1;
-      std::cout << mandelbrot_iteration << "\n";  
+      mandelbrot_iteration += 0.5;
     }
 	}
   if (glfwGetKey( window, GLFW_KEY_N ) == GLFW_PRESS){
     if(mandelbrot_iteration > 10){
-      mandelbrot_iteration -= 0.1;
-      std::cout << mandelbrot_iteration << "\n";  
+      mandelbrot_iteration -= 0.5;
     }
   }
+}
 
+void updateModelViewProjection(){
+  scaler = 1.2f;
   glm::mat4 Projection = glm::perspective(glm::radians(FoV), 4.0f / 3.0f, 0.1f, 100.0f);
 	// Camera matrix
 	glm::mat4 View       = glm::lookAt(
@@ -230,9 +236,9 @@ void checkpressedkey(){
 
   glm::mat4 scaleMatrix =	glm::scale(glm::vec3(scaler, scaler, scaler)); 
 	glm::mat4 rotationMatrix = glm::rotate(glm::radians(0.0f),glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 translationMatrix = glm::translate(glm::vec3(position_x, position_y, 0.0f)); // - (mouse_pos_x - 512.0f) / 1024.0f + (mouse_pos_y - 384.0f) / 768.0f
+	glm::mat4 translationMatrix = glm::translate(glm::vec3(position_x - (mouse_pos_x - 512.0f) / 1024.0f, position_y + (mouse_pos_y - 384.0f) / 1536.0f, 0.0f)); // - (mouse_pos_x - 512.0f) / 1024.0f + (mouse_pos_y - 384.0f) / 768.0f
 
   glm::mat4 Model = translationMatrix * rotationMatrix * scaleMatrix;
 
   MVP =  Projection* View * Model;
-} 
+}
