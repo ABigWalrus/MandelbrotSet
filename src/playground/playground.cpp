@@ -81,6 +81,8 @@ void updateAnimationLoop()
 bool initializeWindow()
 {
   // Initialise GLFW
+  screen_width = 1600;
+  screen_height = 1200;
   if (!glfwInit())
   {
     fprintf(stderr, "Failed to initialize GLFW\n");
@@ -95,7 +97,7 @@ bool initializeWindow()
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   // Open a window and create its OpenGL context
-  window = glfwCreateWindow(1024, 768, "Mandelbrot Set", NULL, NULL);
+  window = glfwCreateWindow(screen_width, screen_height, "Mandelbrot Set", NULL, NULL);
   if (window == NULL) {
     fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
     getchar();
@@ -115,7 +117,7 @@ bool initializeWindow()
 
   // Ensure we can capture the escape key being pressed below
   glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-  glfwSetCursorPos(window, 1024/2, 768/2);
+  glfwSetCursorPos(window, screen_width/2, screen_height/2);
 
   // Dark blue background
   //glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
@@ -236,7 +238,7 @@ void updateModelViewProjection(){
 
   glm::mat4 scaleMatrix =	glm::scale(glm::vec3(scaler, scaler, scaler)); 
 	glm::mat4 rotationMatrix = glm::rotate(glm::radians(0.0f),glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 translationMatrix = glm::translate(glm::vec3(position_x - (mouse_pos_x - 512.0f) / 1024.0f, position_y + (mouse_pos_y - 384.0f) / 1536.0f, 0.0f)); // - (mouse_pos_x - 512.0f) / 1024.0f + (mouse_pos_y - 384.0f) / 768.0f
+	glm::mat4 translationMatrix = glm::translate(glm::vec3(position_x - mouse_pos_x/screen_width + 0.5f, position_y + mouse_pos_y/screen_height -0.5f, 0.0f)); // - (mouse_pos_x - 512.0f) / 1024.0f + (mouse_pos_y - 384.0f) / 768.0f
 
   glm::mat4 Model = translationMatrix * rotationMatrix * scaleMatrix;
 

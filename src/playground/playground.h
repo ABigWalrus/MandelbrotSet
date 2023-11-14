@@ -23,6 +23,8 @@ float FoV , scaler, position_x, position_y, mouse_transform_x, mouse_transform_y
 
 double mouse_pos_x, mouse_pos_y;
 
+int screen_width, screen_height;
+
 
 
 
