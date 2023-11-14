@@ -238,7 +238,7 @@ void updateModelViewProjection(){
 
   glm::mat4 scaleMatrix =	glm::scale(glm::vec3(scaler, scaler, scaler)); 
 	glm::mat4 rotationMatrix = glm::rotate(glm::radians(0.0f),glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 translationMatrix = glm::translate(glm::vec3(position_x - mouse_pos_x/screen_width + 0.5f, position_y + mouse_pos_y/screen_height -0.5f, 0.0f)); // - (mouse_pos_x - 512.0f) / 1024.0f + (mouse_pos_y - 384.0f) / 768.0f
+	glm::mat4 translationMatrix = glm::translate(glm::vec3(position_x - mouse_pos_x/screen_width + 0.5f, position_y -0.5f + mouse_pos_y/screen_height, 0.0f)); //       
 
   glm::mat4 Model = translationMatrix * rotationMatrix * scaleMatrix;
 
